@@ -1,27 +1,40 @@
-import { createInterface } from "readline";
+import { State } from "./state.js";
+
+export async function startREPL(state: State) {
+  state.readline.prompt();
+
+  state.readline.on("line", async (input) => {
+    const words = cleanInput(input);
+    if (words.length === 0) {
+      state.readline.prompt();
+      return;
+    }
+
+    const commandName = words[0];
+
+    const cmd = state.commands[commandName];
+    if (!cmd) {
+      console.log(
+        `Unknown command: "${commandName}". Type "help" for a list of commands.`,
+      );
+      state.readline.prompt();
+      return;
+    }
+
+    try {
+      await cmd.callback(state);
+    } catch (e) {
+      console.log(e);
+    }
+
+    state.readline.prompt();
+  });
+}
 
 export function cleanInput(input: string): string[] {
-    let splitInput = input.trim().split(/\s+/);
-    let cleanedInput = splitInput.map((word) => word.toLowerCase());
-    return cleanedInput; 
-} 
-
-export function startREPL() {
-    const rl = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: '> '
-    });
-
-    rl.prompt();
-
-    rl.on('line', (line: string) => {
-        let cleanedInput = cleanInput(line);
-        if (cleanedInput.length === 0) {
-            rl.prompt();
-        } else {
-            console.log(`Your command was: ${cleanedInput[0]}`);
-            rl.prompt();
-        }
-    })
+  return input
+    .toLowerCase()
+    .trim()
+    .split(" ")
+    .filter((word) => word !== "");
 }
