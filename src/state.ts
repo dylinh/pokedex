@@ -5,8 +5,13 @@ import { PokeAPI } from "./pokeapi.js";
 export type CLICommand = {
   name: string;
   description: string;
-  callback: (state: State) => Promise<void>;
+  callback: (state: State, ...args: string[]) => Promise<void>;
 };
+
+export type Pokemon = {
+  name: string;
+  base_experience: number;
+}
 
 export type State = {
   readline: Interface;
@@ -14,6 +19,7 @@ export type State = {
   pokeAPI: PokeAPI;
   nextLocationsURL?: string | null; 
   prevLocationsURL?: string | null;
+  pokedex: Record<string, Pokemon>;
 };  
 
 export function initState() {
@@ -27,5 +33,6 @@ export function initState() {
     readline: rl,
     commands: getCommands(),
     pokeAPI: new PokeAPI(),
+    pokedex: {}
   };
 }
